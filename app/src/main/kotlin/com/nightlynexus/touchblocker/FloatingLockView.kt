@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.os.SystemClock
+import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.ImageView
@@ -137,6 +138,18 @@ internal class FloatingLockView(
   private var differenceY = 0f
 
   override fun onTouchEvent(event: MotionEvent): Boolean {
+    // If this event is from a mouse and the view is fully transparent, let the event pass through.
+    val pointerIndex = event.actionIndex.coerceAtMost(event.pointerCount - 1)
+    val toolType = try {
+      event.getToolType(pointerIndex)
+    } catch (e: Exception) {
+      MotionEvent.TOOL_TYPE_UNKNOWN
+    }
+    if (toolType == MotionEvent.TOOL_TYPE_MOUSE && alpha == 0f) {
+      // Returning false so the event can be handled by underlying window.
+      return false
+    }
+
     when (event.actionMasked) {
       MotionEvent.ACTION_DOWN -> {
         touching = true
@@ -182,6 +195,27 @@ internal class FloatingLockView(
       }
     }
     return false
+  }
+
+  // Handle generic motion events (hover/mouse move). Let them pass through when the overlay is fully transparent.
+  override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+    val isMouseSource = (event.source and InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE
+    val pointerIndex = if (event.pointerCount > 0) 0 else -1
+    val toolType = if (pointerIndex >= 0) {
+      try {
+        event.getToolType(pointerIndex)
+      } catch (e: Exception) {
+        MotionEvent.TOOL_TYPE_UNKNOWN
+      }
+    } else {
+      MotionEvent.TOOL_TYPE_UNKNOWN
+    }
+
+    if ((isMouseSource || toolType == MotionEvent.TOOL_TYPE_MOUSE) && alpha == 0f) {
+      // Let mouse hover/motion pass through when transparent.
+      return false
+    }
+    return super.onGenericMotionEvent(event)
   }
 
   private var movementAnimating = false
