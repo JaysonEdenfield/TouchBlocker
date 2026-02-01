@@ -28,6 +28,12 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon
 
+        # debug path
+      - name: List APK outputs
+        run: |
+          echo "=== APK outputs ==="
+          find . -type f -name "*.apk"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
