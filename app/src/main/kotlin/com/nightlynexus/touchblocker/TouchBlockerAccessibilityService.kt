@@ -11,7 +11,7 @@ import android.graphics.PixelFormat
 import android.graphics.Point
 import android.os.Build.VERSION.SDK_INT
 import android.os.PowerManager
-import androis.view.InputDevice
+import android.view.InputDevice
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.Gravity
