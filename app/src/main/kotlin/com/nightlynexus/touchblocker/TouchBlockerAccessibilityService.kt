@@ -11,6 +11,7 @@ import android.graphics.PixelFormat
 import android.graphics.Point
 import android.os.Build.VERSION.SDK_INT
 import android.os.PowerManager
+import androis.view.InputDevice
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.Gravity
@@ -153,10 +154,19 @@ class TouchBlockerAccessibilityService : AccessibilityService(), FloatingViewSta
           this@TouchBlockerAccessibilityService,
           BackgroundViewOnGestureListener()
         )
-
+        
         override fun onTouch(v: View, event: MotionEvent): Boolean {
-          return gestureDetector.onTouchEvent(event)
-        }
+          val isTouchScreen =
+            (event.source and InputDevice.SOURCE_TOUCHSCREEN) == InputDevice.SOURCE_TOUCHSCREEN
+
+  if (isTouchScreen) {
+    // Block noisy/broken touchscreen input
+    return gestureDetector.onTouchEvent(event)
+  }
+
+  // Let mouse / trackpad / pen events pass through
+  return false
+}
       })
     }
 
